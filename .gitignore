@@ -1,10 +1,5 @@
 /bin
 
-# Java
-*.class
-*.jar
-*.war
-*.ear
 
 # Eclipse
 .project
