@@ -9,9 +9,9 @@ import java.util.HashMap;
 
 public class GEXFParser {
 
-	HashMap<String,Node> map = new HashMap<String,Node>();
 
-	public void read(){
+	static public HashMap<String, Node> read(){
+		HashMap<String,Node> map = new HashMap<String,Node>();
 		try{
 			File file = new File("AllNode.gexf");
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -60,22 +60,23 @@ public class GEXFParser {
 				}
 			}
 			
-			for(Edge edge:map.get("12345678").edge_in){
-				System.out.println(edge.source.id);	
-			}
+//			for(Edge edge:map.get("12345678").edge_out){
+//				System.out.println(edge.source.id);	
+//			}
 
 			br.close();
+			return map;
 		}catch(FileNotFoundException e){
 			System.out.println(e);
 		}catch(IOException e){
 			System.out.println(e);
 		}
+		return map;
 	}
 	
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ
-		GEXFParser gParser = new GEXFParser();
-		gParser.read();
+		read();
 	}
 
 }

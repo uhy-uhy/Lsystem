@@ -15,5 +15,18 @@ public class Node {
 		this.position_y = position_y;
 	}
 	
-	
+	public int getX_i(){
+		return (int)position_x;
+	}
+	public int getY_i(){
+		return (int)position_y;
+	}
+	public int getX_i(double multiple){
+		int origin_x = GraphDraw.SCREEN_WIDTH / 2;
+		return (int)(position_x * multiple) + origin_x;
+	}
+	public int getY_i(double multiple){
+		int origin_y = GraphDraw.SCREEN_HEIGHT / 2;
+		return  origin_y - (int)(position_y * multiple);
+	}
 }
