@@ -79,8 +79,8 @@ public class Main {
 //        PartitionGraph partitionGraph = new PartitionGraph();
 //        partitionGraph.script();
 //
-//        RankingGraph rankingGraph = new RankingGraph();
-//        rankingGraph.script();
+        RankingGraph rankingGraph = new RankingGraph();
+        rankingGraph.script();
 //
 //        Filtering filtering = new Filtering();
 //        filtering.script();
@@ -106,8 +106,8 @@ public class Main {
 //    	GenerateGraph generateGraph = new GenerateGraph();
 //    	generateGraph.script();
     	
-    	PreviewJFrame previewJFrame = new PreviewJFrame();
-    	previewJFrame.script();
+//    	PreviewJFrame previewJFrame = new PreviewJFrame();
+//    	previewJFrame.script();
     }
     
   

@@ -23,15 +23,48 @@ package test;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+
 import javax.swing.JFrame;
+
+import org.gephi.data.attributes.api.AttributeController;
+import org.gephi.data.attributes.api.AttributeModel;
+import org.gephi.filters.api.FilterController;
+import org.gephi.filters.api.Query;
+import org.gephi.filters.api.Range;
+import org.gephi.filters.plugin.graph.DegreeRangeBuilder.DegreeRangeFilter;
+import org.gephi.graph.api.DirectedGraph;
+import org.gephi.graph.api.Edge;
+import org.gephi.graph.api.GraphController;
+import org.gephi.graph.api.GraphModel;
+import org.gephi.graph.api.GraphView;
+import org.gephi.graph.api.Node;
+import org.gephi.graph.api.UndirectedGraph;
+import org.gephi.graph.spi.LayoutData;
+import org.gephi.io.generator.plugin.DynamicGraph;
+import org.gephi.io.generator.plugin.RandomGraph;
 import org.gephi.io.importer.api.Container;
+import org.gephi.io.importer.api.ContainerFactory;
+import org.gephi.io.importer.api.EdgeDefault;
 import org.gephi.io.importer.api.ImportController;
+import org.gephi.io.processor.plugin.AppendProcessor;
 import org.gephi.io.processor.plugin.DefaultProcessor;
+import org.gephi.layout.plugin.ForceLayoutData;
+import org.gephi.layout.plugin.force.StepDisplacement;
+import org.gephi.layout.plugin.force.yifanHu.YifanHuLayout;
+import org.gephi.layout.plugin.forceAtlas.ForceAtlas;
+import org.gephi.layout.plugin.forceAtlas.ForceAtlasLayout;
+import org.gephi.layout.spi.Layout;
+import org.gephi.layout.spi.LayoutBuilder;
+import org.gephi.layout.spi.LayoutProperty;
+import org.gephi.layout.spi.LayoutUI;
 import org.gephi.preview.api.*;
 import org.gephi.preview.types.DependantOriginalColor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
+import org.gephi.ranking.api.RankingController;
 import org.openide.util.Lookup;
+
 import processing.core.PApplet;
 
 /**
@@ -41,7 +74,7 @@ import processing.core.PApplet;
 public class PreviewJFrame {
     
     public void script() {
-        //Init a project - and therefore a workspace
+    	//Init a project - and therefore a workspace
         ProjectController pc = Lookup.getDefault().lookup(ProjectController.class);
         pc.newProject();
         Workspace workspace = pc.getCurrentWorkspace();
@@ -51,6 +84,7 @@ public class PreviewJFrame {
         Container container;
         try {
             File file = new File(getClass().getResource("/Java.gexf").toURI());
+        	//File file = new File(getClass().getResource("/AllNode.gexf").toURI());
             container = importController.importFile(file);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -90,6 +124,25 @@ public class PreviewJFrame {
         
         frame.pack();
         frame.setVisible(true);
+    }
+    
+    public class MyLayoutBuilder implements LayoutBuilder {
+
+		public Layout buildLayout() {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
+		}
+
+		public String getName() {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
+		}
+
+		public LayoutUI getUI() {
+			// TODO 自動生成されたメソッド・スタブ
+			return null;
+		}
+    
     }
     
     public static void main(String[] args) {

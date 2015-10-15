@@ -77,7 +77,7 @@ public class RankingGraph {
         //Import file
         Container container;
         try {
-            File file = new File(getClass().getResource("/org/gephi/toolkit/demos/resources/lesmiserables.gml").toURI());
+            File file = new File(getClass().getResource("/lesmiserables.gml").toURI());
             container = importController.importFile(file);
             container.getLoader().setEdgeDefault(EdgeDefault.DIRECTED);   //Force DIRECTED
         } catch (Exception ex) {
