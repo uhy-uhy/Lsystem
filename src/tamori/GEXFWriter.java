@@ -92,7 +92,7 @@ public class GEXFWriter {
 			while(!deque.isEmpty()){
 				Node nowNode = deque.poll();
 				for(Edge edge : nowNode.edge_out){
-					pw3.println("<edge id=\""+edge.label+"\" source=\""+edge.source.label+"\" target=\""+edge.target.label+"\" />");
+					pw3.println("<edge label=\""+edge.label+"\" source=\""+edge.source.label+"\" target=\""+edge.target.label+"\" />");
 					if(!map.containsValue(edge.target)){
 						map.put(edge.target.label, edge.target);
 						deque.add(edge.target);
