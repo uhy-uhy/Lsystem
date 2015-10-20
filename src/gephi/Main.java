@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -14,14 +15,17 @@ import java.util.Random;
 import javax.swing.JFrame;
 
 import org.apache.bcel.generic.I2F;
+import org.apache.bcel.generic.NEW;
 import org.gephi.data.attributes.api.AttributeColumn;
 import org.gephi.data.attributes.api.AttributeController;
 import org.gephi.data.attributes.api.AttributeModel;
 import org.gephi.graph.api.DirectedGraph;
 import org.gephi.graph.api.Edge;
+import org.gephi.graph.api.EdgeIterable;
 import org.gephi.graph.api.GraphController;
 import org.gephi.graph.api.GraphModel;
 import org.gephi.graph.api.Node;
+import org.gephi.io.exporter.api.ExportController;
 import org.gephi.io.importer.api.Container;
 import org.gephi.io.importer.api.EdgeDefault;
 import org.gephi.io.importer.api.ImportController;
@@ -33,7 +37,9 @@ import org.gephi.preview.api.PreviewModel;
 import org.gephi.preview.api.PreviewProperty;
 import org.gephi.preview.api.ProcessingTarget;
 import org.gephi.preview.api.RenderTarget;
+import org.gephi.preview.plugin.items.EdgeItem;
 import org.gephi.preview.types.DependantOriginalColor;
+import org.gephi.preview.types.EdgeColor;
 import org.gephi.project.api.ProjectController;
 import org.gephi.project.api.Workspace;
 import org.gephi.ranking.api.Ranking;
@@ -84,6 +90,11 @@ public class Main  implements Runnable,KeyListener {
 	private Thread thread;
 	private boolean start = false;
 
+	private HashMap<String,Boolean> map = new HashMap<String,Boolean>();
+	private Node startNode;
+	private ArrayDeque<Node> nextNode  = new ArrayDeque<Node>();
+	private ArrayDeque<Node> nowNode  = new ArrayDeque<Node>();
+
 	public Main(){
 		pc = Lookup.getDefault().lookup(ProjectController.class);
 		pc.newProject();
@@ -100,17 +111,22 @@ public class Main  implements Runnable,KeyListener {
 		Node n0 = graphModel.factory().newNode("1");
 		n0.getNodeData().setLabel("1");
 		//n0.getNodeData().setSize(1);
+		//n0.getNodeData().setColor(1.0f, 0.0f, 0.0f);
 
 		graph.addNode(n0);
+
+		startNode = graph.getNode("1");
+		nowNode.add(startNode);
+		map.put(startNode.getNodeData().getId(), true);
 
 		distance = new GraphDistance();
 		distance.setDirected(true);
 		distance.execute(graphModel, attributeModel);
 
-		degreeRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, Ranking.DEGREE_RANKING);
-		colorTransformer = (AbstractColorTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_COLOR);
-		colorTransformer.setColors(new Color[]{new Color(0xFEF0D9), new Color(0xB30000)});
-		rankingController.transform(degreeRanking,colorTransformer);
+		//		degreeRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, Ranking.DEGREE_RANKING);
+		//		colorTransformer = (AbstractColorTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_COLOR);
+		//		colorTransformer.setColors(new Color[]{new Color(0xFEF0D9), new Color(0xB30000)});
+		//		rankingController.transform(degreeRanking,colorTransformer);
 
 		centralityColumn = attributeModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
 		centralityRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
@@ -135,6 +151,8 @@ public class Main  implements Runnable,KeyListener {
 		model.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 1f);
 		model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
 		model.getProperties().putValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.FALSE);
+		//↓これめっちゃ大事
+		model.getProperties().putValue(PreviewProperty.EDGE_COLOR,new EdgeColor(EdgeColor.Mode.ORIGINAL) );
 		previewController.refreshPreview();
 
 		target = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
@@ -187,36 +205,25 @@ public class Main  implements Runnable,KeyListener {
 		rankingController = Lookup.getDefault().lookup(RankingController.class);
 
 		graph = graphModel.getDirectedGraph();
+		
+		startNode = graph.getNode("86543217");
+		startNode.getNodeData().setColor(1.0f,0.0f, 0.0f);
+		startNode.getNodeData().setSize(10);
+		nowNode.add(startNode);
+		map.put(startNode.getNodeData().getId(), true);
 
+		//エッジ無し
+		graph.clearEdges();
 		//無理やりエッジの太さを決める
-		for(Edge e:graph.getEdges()){
-			e.setWeight(3);
-		}
+//		for(Edge e:graph.getEdges()){
+//			//EdgeItem item = new EdgeItem(e);
+//			//item.setData(EdgeItem.COLOR, new Color(255, 0, 0, 100));
+//			e.setWeight(0);
+//			e.getEdgeData().setColor(1.0f, 1.0f, 1.0f);
+//			e.getEdgeData().setAlpha(1.0f);
+//		}
 
-
-		distance = new GraphDistance();
-		distance.setDirected(true);
-		distance.execute(graphModel, attributeModel);
-
-		//		degreeRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, Ranking.DEGREE_RANKING);
-		//		colorTransformer = (AbstractColorTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_COLOR);
-		//		colorTransformer.setColors(new Color[]{new Color(0xFEF0D9), new Color(0xB30000)});
-		//		rankingController.transform(degreeRanking,colorTransformer);
-
-		centralityColumn = attributeModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
-		centralityRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
-		sizeTransformer = (AbstractSizeTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_SIZE);
-		sizeTransformer.setMinSize(5);
-		sizeTransformer.setMaxSize(100);
-		rankingController.transform(centralityRanking,sizeTransformer);
-
-		//		centralityRanking2 = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
-		//	    labelSizeTransformer = (AbstractSizeTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.LABEL_SIZE);
-		//	    labelSizeTransformer.setMinSize(1);
-		//	    labelSizeTransformer.setMaxSize(3);
-		//	    rankingController.transform(centralityRanking2,labelSizeTransformer);
-
-		//	    YifanHuLayout();
+		System.out.println("プレビューコントローラー");
 
 		previewController = Lookup.getDefault().lookup(PreviewController.class);
 		//model.getProperties().putValue(PreviewProperty.ARROW_SIZE, Boolean.TRUE);
@@ -224,10 +231,11 @@ public class Main  implements Runnable,KeyListener {
 		//model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.TRUE);
 		model.getProperties().putValue(PreviewProperty.NODE_LABEL_COLOR, new DependantOriginalColor(Color.BLACK));
 		model.getProperties().putValue(PreviewProperty.EDGE_CURVED, Boolean.FALSE);
-		//		model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, 50);
+		//model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, Boolean.TRUE);
 		model.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 1f);
 		model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
 		model.getProperties().putValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.FALSE);
+		model.getProperties().putValue(PreviewProperty.EDGE_COLOR,new EdgeColor(EdgeColor.Mode.ORIGINAL) );
 		previewController.refreshPreview();
 
 		target = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
@@ -283,10 +291,6 @@ public class Main  implements Runnable,KeyListener {
 		layout.resetPropertiesValues();
 		layout.setOptimalDistance(200f);
 
-		//		layout.initAlgo();
-		//		layout.goAlgo();
-		//		layout.endAlgo();
-
 		layout.initAlgo();
 		for (int i = 0; i < 100 && layout.canAlgo(); i++) {
 			layout.goAlgo();
@@ -311,7 +315,7 @@ public class Main  implements Runnable,KeyListener {
 		String num = String.valueOf(graph.getNodeCount()+1);
 		Node n = graphModel.factory().newNode(num);
 		n.getNodeData().setLabel(num);
-		//n.getNodeData().setSize(1);
+		n.getNodeData().setColor(1.0f, 0.0f, 0.0f);;
 		addNode(n);
 
 		if(graph.getNodeCount() > 1){
@@ -323,55 +327,27 @@ public class Main  implements Runnable,KeyListener {
 			Node target = graph.getNode(ran);
 
 			Edge e = graphModel.factory().newEdge(n, target, 2f, true);
+			//e.getEdgeData().setColor(1.0f, 0.0f, 0.0f);
 			addEdge(e);
 		}
 	}
 
+
+
 	public void run() {
-		HashMap<String,Boolean> map = new HashMap<String,Boolean>();
-		Node startNode = graph.getNode("86543217");
-		startNode.getNodeData().setColor(1.0f,0.0f, 0.0f);
-		startNode.getNodeData().setSize(20);
-		ArrayDeque<Node> nextNode  = new ArrayDeque<Node>();
-		ArrayDeque<Node> nowNode  = new ArrayDeque<Node>();
-		nowNode.add(startNode);
-		while(true)
+		boolean roop = true;
+		while(roop)
 		{
 			if(start){
-				//				generate_sample();
-				//				ranking();
-				//				YifanHuLayout();
+				//dynamic_sample();
+				//test_search();
 
-				while(!nowNode.isEmpty()){
-					Node node = nowNode.poll();
-					map.put(node.getNodeData().getId(), true);
-					for(Edge edge:graph.getEdges(node)){
-						//						if(edge.getSource() == node){
-						//							edge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
-						//							edge.setWeight(5.0f);
-						//							nextNode.add(edge.getTarget());
-						//						}
-						edge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
-						edge.setWeight(5.0f);
-						Node target  = edge.getTarget();
-						Node source = edge.getSource();
-						if(!map.containsKey(target.getNodeData().getId()))
-							nextNode.add(target);
-						if(!map.containsKey(source.getNodeData().getId()))
-							nextNode.add(source);
-					}
-				}
-				System.out.println(nextNode.size());
-				while(!nextNode.isEmpty()){
-					Node node = nextNode.poll();
-					node.getNodeData().setColor(1.0f,0.0f, 0.0f);
-					if(node.getNodeData().getSize() < 20f)
-						node.getNodeData().setSize(20);
-					nowNode.add(node);
-				}
-
+				roop = test_edgeGenerating_search();
+				
 				previewController.refreshPreview();
 				target.refresh();
+				System.out.println("表示");
+				//start = false;
 			}
 			try {
 				Thread.sleep(200);
@@ -381,12 +357,176 @@ public class Main  implements Runnable,KeyListener {
 				e.printStackTrace();
 			}
 		}
+		
+		System.out.println(graph.getEdges(startNode).toArray().length);
+
+		ranking();
+		previewController.refreshPreview();
+		target.refresh();
+		System.out.println("finish ranking");
+
+		
+		//output_gexf();
+	}
+
+	public void dynamic_sample(){
+		generate_sample();
+		ranking();
+		YifanHuLayout();
+		while(!nowNode.isEmpty()){
+			Node node = nowNode.poll();
+			map.put(node.getNodeData().getId(), true);
+			for(Edge edge:graph.getEdges(node)){
+				if(edge.getSource() == node){
+					nextNode.add(edge.getTarget());
+				}
+			}
+		}
+		while(!nextNode.isEmpty()){
+			Node node = nextNode.poll();
+			nowNode.add(node);
+		}
+	}
+
+	public void test_search(){
+		while(!nowNode.isEmpty()){
+			Node node = nowNode.poll();
+			map.put(node.getNodeData().getId(), true);
+			for(Edge edge:graph.getEdges(node)){
+				//edge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
+				//edge.setWeight(5.0f);
+				Node target  = edge.getTarget();
+				Node source = edge.getSource();
+				if(!map.containsKey(target.getNodeData().getId()))
+					nextNode.add(target);
+				if(!map.containsKey(source.getNodeData().getId()))
+					nextNode.add(source);
+			}
+		}
+		System.out.println(nextNode.size());
+		while(!nextNode.isEmpty()){
+			Node node = nextNode.poll();
+			node.getNodeData().setColor(1.0f,0.0f, 0.0f);
+			if(node.getNodeData().getSize() < 20f)
+				node.getNodeData().setSize(10);
+			nowNode.add(node);
+		}
+
+	}
+	
+	//エッジ無しの状態からスタート
+	public boolean test_edgeGenerating_search(){
+		while(!nowNode.isEmpty()){
+			Node node = nowNode.poll();
+			//ノードにエッジ装着
+			testLsys(node);
+			EdgeIterable edgeIterable = graph.getEdges(node);
+			Edge[] edges = edgeIterable.toArray();
+			//for(Edge edge:graph.getEdges(node)){		←この書き方だとlockされていてremove,clearできない
+			for(Edge edge : edges){
+				Node target  = edge.getTarget();
+				if(!map.containsKey(target.getNodeData().getId())){
+					map.put(target.getNodeData().getId(), true);
+					nextNode.add(target);
+				}
+			}
+		}
+		System.out.println("next node = " + nextNode.size());
+		//終了条件
+		if(nextNode.size() == 0)
+			return false;
+		while(!nextNode.isEmpty()){
+			Node node = nextNode.poll();
+			node.getNodeData().setColor(1.0f,0.0f, 0.0f);
+			if(node.getNodeData().getSize() < 20f)
+				node.getNodeData().setSize(10);
+			nowNode.add(node);
+		}
+		
+		return true;
+	}
+	
+	public String[] commands = new String[]{"LS1","LS2","LS3","LS4","LR1","LR2","LR3","LR4"};
+	public void testLsys(Node node){
+		//全状態生成
+		for(String command : commands){
+			String newLabel = deform(node.getNodeData().getLabel(), command);
+			//既にキーが入っている場合はスキップ
+			if(!map.containsKey(newLabel)){
+				Node target = graph.getNode(newLabel);
+				Edge newEdge = graphModel.factory().newEdge(node, target);
+				newEdge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
+				newEdge.setWeight(5.0f);
+				newEdge.getEdgeData().setAlpha(0.3f);
+				graph.addEdge(newEdge);
+			}
+		}
+	}
+	
+	//変形用関数
+	public String deform(String label,String command){
+		String tmp = "";
+		String result = "";
+		switch (command) {
+		case "LR1":
+			tmp = label.substring(0, 2) + label.substring(label.length() - 1, label.length());
+			result = tmp.substring(1,2) + tmp.substring(2,3) + label.substring(2,label.length() - 1) + tmp.substring(0,1);
+			//System.out.println(result);
+			break;
+		case "LR2":
+			tmp = label.substring(1, 4);
+			result = label.substring(0,1) + tmp.substring(1 ,2) + tmp.substring(2 ,3) + tmp.substring(0 ,1) +label.substring(4 ,label.length()); 
+			//System.out.println(result);
+			break;
+		case "LR3":
+			tmp = label.substring(3, 6);
+			result = label.substring(0,3) + tmp.substring(1 ,2) + tmp.substring(2 ,3) + tmp.substring(0 ,1) +label.substring(6 ,label.length());  
+			break;
+		case "LR4":
+			tmp = label.substring(5, 8);
+			result = label.substring(0,5) + tmp.substring(1 ,2) + tmp.substring(2 ,3) + tmp.substring(0 ,1); 
+			break;
+		case "LS1":
+			tmp = label.substring(0, 3);
+			result = tmp.substring(1,2) + tmp.substring(2, 3) + tmp.substring(0, 1) + label.substring(3,label.length());
+			break;
+		case "LS2":
+			tmp = label.substring(2, 5);
+			result = label.substring(0, 2) + tmp.substring(1,2) + tmp.substring(2, 3) + tmp.substring(0, 1) + label.substring(5,label.length());
+			break;
+		case "LS3":
+			tmp = label.substring(4, 7);
+			result = label.substring(0, 4) + tmp.substring(1,2) + tmp.substring(2, 3) + tmp.substring(0, 1) + label.substring(label.length() - 1,label.length());
+			break;
+		case "LS4":
+			tmp = label.substring(0, 1) + label.substring(6, 8);
+			result = tmp.substring(1, 2) + label.substring(1, 6) + tmp.substring(2, 3) + tmp.substring(0, 1);
+			break;
+		default:
+			System.out.println("No command!!!!");
+			break;
+
+		}
+
+		return result;
+	}
+
+	
+	public void output_gexf(){
+        //Export full graph
+        ExportController ec = Lookup.getDefault().lookup(ExportController.class);
+        try {
+            ec.exportFile(new File("output_gexf.gexf"));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            return;
+        }
 	}
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ
 		//Main main = new Main();
-		Main main = new Main("/AllNode_Yifan.gexf");
+		Main main = new Main("/YifanHu_3x3_86543217_ex2.gexf");
 	}
 
 	public void keyPressed(KeyEvent e) {
