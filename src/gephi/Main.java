@@ -83,7 +83,7 @@ public class Main  implements Runnable,KeyListener {
 	private PreviewController previewController;
 
 	//New Processing target, get the PApplet
-	private ProcessingTarget target;
+	private ProcessingTarget pTarget;
 	private PApplet applet;
 
 	JFrame frame;
@@ -95,74 +95,33 @@ public class Main  implements Runnable,KeyListener {
 	private ArrayDeque<Node> nextNode  = new ArrayDeque<Node>();
 	private ArrayDeque<Node> nowNode  = new ArrayDeque<Node>();
 
-	public Main(){
+	public Main(String start_id){
 		pc = Lookup.getDefault().lookup(ProjectController.class);
 		pc.newProject();
 		workspace = pc.getCurrentWorkspace();
 
-		attributeModel = Lookup.getDefault().lookup(AttributeController.class).getModel();
-		graphModel = Lookup.getDefault().lookup(GraphController.class).getModel();
-		model = Lookup.getDefault().lookup(PreviewController.class).getModel();
-		rankingController = Lookup.getDefault().lookup(RankingController.class);
-
-		graph = graphModel.getDirectedGraph();
+		init();
 
 		//Create three nodes
-		Node n0 = graphModel.factory().newNode("1");
-		n0.getNodeData().setLabel("1");
+		Node n0 = graphModel.factory().newNode(start_id);
+		n0.getNodeData().setLabel(start_id);
 		//n0.getNodeData().setSize(1);
 		//n0.getNodeData().setColor(1.0f, 0.0f, 0.0f);
 
 		graph.addNode(n0);
 
-		startNode = graph.getNode("1");
+		startNode = graph.getNode(start_id);
 		nowNode.add(startNode);
 		map.put(startNode.getNodeData().getId(), true);
 
-		distance = new GraphDistance();
-		distance.setDirected(true);
-		distance.execute(graphModel, attributeModel);
-
-		//		degreeRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, Ranking.DEGREE_RANKING);
-		//		colorTransformer = (AbstractColorTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_COLOR);
-		//		colorTransformer.setColors(new Color[]{new Color(0xFEF0D9), new Color(0xB30000)});
-		//		rankingController.transform(degreeRanking,colorTransformer);
-
-		centralityColumn = attributeModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
-		centralityRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
-		sizeTransformer = (AbstractSizeTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_SIZE);
-		sizeTransformer.setMinSize(5);
-		sizeTransformer.setMaxSize(20);
-		rankingController.transform(centralityRanking,sizeTransformer);
-
-		//		centralityRanking2 = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
-		//		labelSizeTransformer = (AbstractSizeTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.LABEL_SIZE);
-		//		labelSizeTransformer.setMinSize(1);
-		//		labelSizeTransformer.setMaxSize(3);
-		//		rankingController.transform(centralityRanking2,labelSizeTransformer);
-
-		previewController = Lookup.getDefault().lookup(PreviewController.class);
-		//model.getProperties().putValue(PreviewProperty.ARROW_SIZE, Boolean.TRUE);
-		//model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, new Float(1f));
-		//model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.TRUE);
-		model.getProperties().putValue(PreviewProperty.NODE_LABEL_COLOR, new DependantOriginalColor(Color.BLACK));
-		model.getProperties().putValue(PreviewProperty.EDGE_CURVED, Boolean.FALSE);
-		//		model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, 50);
-		model.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 1f);
-		model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
-		model.getProperties().putValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.FALSE);
-		//↓これめっちゃ大事
-		model.getProperties().putValue(PreviewProperty.EDGE_COLOR,new EdgeColor(EdgeColor.Mode.ORIGINAL) );
-		previewController.refreshPreview();
-
-		target = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
-		applet = target.getApplet();
+		pTarget = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
+		applet = pTarget.getApplet();
 		applet.init();
 		applet.addKeyListener(this);
 
 		//Refresh the preview and reset the zoom
-		target.refresh();
-		target.resetZoom();
+		pTarget.refresh();
+		pTarget.resetZoom();
 
 		//Add the applet to a JFrame and display
 		frame = new JFrame("Preview");
@@ -180,7 +139,7 @@ public class Main  implements Runnable,KeyListener {
 		thread.start();
 	}
 
-	public Main(String filename){
+	public Main(String filename, String start_id){
 		pc = Lookup.getDefault().lookup(ProjectController.class);
 		pc.newProject();
 		workspace = pc.getCurrentWorkspace();
@@ -198,20 +157,15 @@ public class Main  implements Runnable,KeyListener {
 
 		//Append imported data to GraphAPI
 		importController.process(container, new DefaultProcessor(), workspace);
-
-		attributeModel = Lookup.getDefault().lookup(AttributeController.class).getModel();
-		graphModel = Lookup.getDefault().lookup(GraphController.class).getModel();
-		model = Lookup.getDefault().lookup(PreviewController.class).getModel();
-		rankingController = Lookup.getDefault().lookup(RankingController.class);
-
-		graph = graphModel.getDirectedGraph();
 		
-		startNode = graph.getNode("86543217");
+		init();
+
+		startNode = graph.getNode(start_id);
 		startNode.getNodeData().setColor(1.0f,0.0f, 0.0f);
-		startNode.getNodeData().setSize(10);
+		startNode.getNodeData().setSize(40);
 		nowNode.add(startNode);
 		map.put(startNode.getNodeData().getId(), true);
-
+		
 		//エッジ無し
 		graph.clearEdges();
 		//無理やりエッジの太さを決める
@@ -225,28 +179,19 @@ public class Main  implements Runnable,KeyListener {
 
 		System.out.println("プレビューコントローラー");
 
-		previewController = Lookup.getDefault().lookup(PreviewController.class);
-		//model.getProperties().putValue(PreviewProperty.ARROW_SIZE, Boolean.TRUE);
-		//model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, new Float(1f));
-		//model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.TRUE);
-		model.getProperties().putValue(PreviewProperty.NODE_LABEL_COLOR, new DependantOriginalColor(Color.BLACK));
-		model.getProperties().putValue(PreviewProperty.EDGE_CURVED, Boolean.FALSE);
-		//model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, Boolean.TRUE);
-		model.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 1f);
-		model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
-		model.getProperties().putValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.FALSE);
-		model.getProperties().putValue(PreviewProperty.EDGE_COLOR,new EdgeColor(EdgeColor.Mode.ORIGINAL) );
-		previewController.refreshPreview();
-
-		target = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
-		applet = target.getApplet();
+		pTarget = (ProcessingTarget) previewController.getRenderTarget(RenderTarget.PROCESSING_TARGET);
+		applet = pTarget.getApplet();
 		applet.init();
 		applet.addKeyListener(this);
 
 		//Refresh the preview and reset the zoom
-		target.refresh();
-		target.resetZoom();
+		pTarget.refresh();
+		pTarget.resetZoom();
 
+		pTarget.zoomPlus();
+		pTarget.zoomPlus();
+		pTarget.zoomPlus();
+		
 		//Add the applet to a JFrame and display
 		frame = new JFrame("Preview");
 		frame.setLayout(new BorderLayout());
@@ -260,6 +205,31 @@ public class Main  implements Runnable,KeyListener {
 		thread = new Thread(this);
 		thread.start();
 	}
+	
+	public void init(){
+		attributeModel = Lookup.getDefault().lookup(AttributeController.class).getModel();
+		graphModel = Lookup.getDefault().lookup(GraphController.class).getModel();
+		model = Lookup.getDefault().lookup(PreviewController.class).getModel();
+		rankingController = Lookup.getDefault().lookup(RankingController.class);
+
+		graph = graphModel.getDirectedGraph();
+		
+		
+		previewController = Lookup.getDefault().lookup(PreviewController.class);
+		//model.getProperties().putValue(PreviewProperty.ARROW_SIZE, Boolean.TRUE);
+		//model.getProperties().putValue(PreviewProperty.EDGE_THICKNESS, new Float(1f));
+		//model.getProperties().putValue(PreviewProperty.SHOW_NODE_LABELS, Boolean.TRUE);
+		model.getProperties().putValue(PreviewProperty.NODE_LABEL_COLOR, new DependantOriginalColor(Color.BLACK));
+		model.getProperties().putValue(PreviewProperty.EDGE_CURVED, Boolean.FALSE);
+		//model.getProperties().putValue(PreviewProperty.EDGE_OPACITY, Boolean.TRUE);
+		model.getProperties().putValue(PreviewProperty.EDGE_RADIUS, 1f);
+		model.getProperties().putValue(PreviewProperty.BACKGROUND_COLOR, Color.WHITE);
+		model.getProperties().putValue(PreviewProperty.NODE_LABEL_PROPORTIONAL_SIZE, Boolean.FALSE);
+		//↓これめっちゃ大事
+		model.getProperties().putValue(PreviewProperty.EDGE_COLOR,new EdgeColor(EdgeColor.Mode.ORIGINAL) );
+		previewController.refreshPreview();
+	}
+	
 	public void ranking(){
 		distance = new GraphDistance();
 		distance.setDirected(true);
@@ -273,8 +243,8 @@ public class Main  implements Runnable,KeyListener {
 		centralityColumn = attributeModel.getNodeTable().getColumn(GraphDistance.BETWEENNESS);
 		centralityRanking = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
 		sizeTransformer = (AbstractSizeTransformer) rankingController.getModel().getTransformer(Ranking.NODE_ELEMENT, Transformer.RENDERABLE_SIZE);
-		sizeTransformer.setMinSize(3);
-		sizeTransformer.setMaxSize(20);
+		sizeTransformer.setMinSize(6);
+		sizeTransformer.setMaxSize(30);
 		rankingController.transform(centralityRanking,sizeTransformer);
 
 		centralityRanking2 = rankingController.getModel().getRanking(Ranking.NODE_ELEMENT, centralityColumn.getId());
@@ -283,32 +253,19 @@ public class Main  implements Runnable,KeyListener {
 		labelSizeTransformer.setMaxSize(3);
 		rankingController.transform(centralityRanking2,labelSizeTransformer);
 	}
-
+	
+	//レイアウト
 	public void YifanHuLayout(){
-		//レイアウト
 		YifanHuLayout layout = new YifanHuLayout(null, new StepDisplacement(1f));
 		layout.setGraphModel(graphModel);
 		layout.resetPropertiesValues();
 		layout.setOptimalDistance(200f);
 
 		layout.initAlgo();
-		for (int i = 0; i < 100 && layout.canAlgo(); i++) {
+		for (int i = 0; i < 800 && layout.canAlgo(); i++) {
 			layout.goAlgo();
 		}
 		layout.endAlgo();
-	}
-
-	public void addNode(Node node){
-		graph.addNode(node);
-	}
-	public void removeNode(Node node){
-		graph.removeNode(node);
-	}
-	public void addEdge(Edge edge){
-		graph.addEdge(edge);
-	}
-	public void removeEdge(Edge edge){
-		graph.removeEdge(edge);
 	}
 
 	public void generate_sample(){
@@ -316,7 +273,7 @@ public class Main  implements Runnable,KeyListener {
 		Node n = graphModel.factory().newNode(num);
 		n.getNodeData().setLabel(num);
 		n.getNodeData().setColor(1.0f, 0.0f, 0.0f);;
-		addNode(n);
+		graph.addNode(n);
 
 		if(graph.getNodeCount() > 1){
 			Random rnd = new Random();
@@ -328,7 +285,7 @@ public class Main  implements Runnable,KeyListener {
 
 			Edge e = graphModel.factory().newEdge(n, target, 2f, true);
 			//e.getEdgeData().setColor(1.0f, 0.0f, 0.0f);
-			addEdge(e);
+			graph.addEdge(e);
 		}
 	}
 
@@ -336,16 +293,17 @@ public class Main  implements Runnable,KeyListener {
 
 	public void run() {
 		boolean roop = true;
+		System.out.println("start");
 		while(roop)
 		{
 			if(start){
-				//dynamic_sample();
+				dynamic_sample();
 				//test_search();
 
-				roop = test_edgeGenerating_search();
+				//roop = test_edgeGenerating_search();
 				
 				previewController.refreshPreview();
-				target.refresh();
+				pTarget.refresh();
 				System.out.println("表示");
 				//start = false;
 			}
@@ -360,13 +318,44 @@ public class Main  implements Runnable,KeyListener {
 		
 		System.out.println(graph.getEdges(startNode).toArray().length);
 
+
+		
 		ranking();
+		startNode.getNodeData().setSize(40);
+
+		reverse();
+		
+		//YifanHuLayout();
+		
 		previewController.refreshPreview();
-		target.refresh();
+		pTarget.refresh();
 		System.out.println("finish ranking");
 
 		
-		//output_gexf();
+		output_gexf();
+	}
+	
+	//ゴールのノードからリバース
+	public void reverse(){
+		Node goal = graph.getNode("12345678");
+		ArrayDeque<Node> nextNode = new ArrayDeque<Node>();
+		nextNode.add(goal);
+		
+		while(!nextNode.isEmpty()){
+			Node node = nextNode.poll();
+			node.getNodeData().setSize(30);
+			node.getNodeData().setColor(0.0f, 1.0f, 0.0f);
+			Edge[] edges = graph.getEdges(node).toArray();
+			for(Edge edge : edges){
+				if(edge.getTarget() == node){
+					nextNode.add(edge.getSource());
+					edge.setWeight(20.0f);
+				}
+				else{
+				}
+			}
+			System.out.println(node.getNodeData().getLabel());
+		}
 	}
 
 	public void dynamic_sample(){
@@ -415,6 +404,7 @@ public class Main  implements Runnable,KeyListener {
 	}
 	
 	//エッジ無しの状態からスタート
+	//既に読み込んであるノードの中から取得
 	public boolean test_edgeGenerating_search(){
 		while(!nowNode.isEmpty()){
 			Node node = nowNode.poll();
@@ -455,8 +445,15 @@ public class Main  implements Runnable,KeyListener {
 			if(!map.containsKey(newLabel)){
 				Node target = graph.getNode(newLabel);
 				Edge newEdge = graphModel.factory().newEdge(node, target);
-				newEdge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
-				newEdge.setWeight(5.0f);
+				if(command.substring(0, 2).equals("LS"))
+					newEdge.getEdgeData().setColor(1.0f,0.0f, 0.0f);
+				else if(command.substring(0, 2).equals("LR")){
+					newEdge.getEdgeData().setColor(0.0f, 0.0f, 1.0f);
+				}
+				else
+					newEdge.getEdgeData().setColor(0.0f, 1.0f, 0.0f);
+
+				newEdge.setWeight(4.0f);
 				newEdge.getEdgeData().setAlpha(0.3f);
 				graph.addEdge(newEdge);
 			}
@@ -525,8 +522,10 @@ public class Main  implements Runnable,KeyListener {
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ
-		//Main main = new Main();
-		Main main = new Main("/YifanHu_3x3_86543217_ex2.gexf");
+		Main main = new Main("1");
+		//Main main = new Main("/YifanHu_3x3_86543217_searched.gexf","86543217");
+		//Main main = new Main("/YifanHu_800step_3x3_86543217_searched.gexf");
+		
 	}
 
 	public void keyPressed(KeyEvent e) {
