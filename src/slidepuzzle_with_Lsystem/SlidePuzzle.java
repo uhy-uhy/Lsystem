@@ -12,14 +12,26 @@ public class SlidePuzzle {
 
 	static int vertical;
 	static int horizon;
+	static String goal;
 	public static HashMap<String, Boolean> MAP;
 	public SlidePuzzle(int vertical,int horizon){
 		SlidePuzzle.vertical = vertical;
 		SlidePuzzle.horizon = horizon;
 		MAP = new HashMap<String, Boolean>();
-
+	}
+	public SlidePuzzle(int vertical,int horizon,String goal){
+		SlidePuzzle.vertical = vertical;
+		SlidePuzzle.horizon = horizon;
+		SlidePuzzle.goal = goal;
+		MAP = new HashMap<String, Boolean>();
 	}
 	
+	/**
+	 * 空白マスと指定したマスの交換
+	 * @param node
+	 * @param change_type
+	 * @return
+	 */
 	public static String change(SlidePuzzleNode node,String change_type){
 		String state = "";
 		switch (node.getDirection()) {
@@ -122,6 +134,7 @@ public class SlidePuzzle {
 		return new String(sb);
 	}
 	
+	//マハラノビス距離の計算
 	public static int[] calcDistance(SlidePuzzleNode now ,SlidePuzzleNode goal){
 		String nowString = now.getBoardState();
 		String goalString = goal.getBoardState();
@@ -145,12 +158,14 @@ public class SlidePuzzle {
 		return new int[]{distance_x,distance_y};
 	}
 	
-	
+	public static String getGoalBoardState(){
+		return goal;
+	}
 	
 	public static void main(String args[]){
-		SlidePuzzle sp = new SlidePuzzle(3, 3);
+		SlidePuzzle sp = new SlidePuzzle(3, 3,"123456780");
 		SlidePuzzleNode node = new SlidePuzzleNode("0", "123406785", "8", null);
-		Lsystem lsys = new SlidePuzzleLsystem("123456780");
+		Lsystem lsys = new SlidePuzzleLsystem();
 		lsys.apply(node);
 		node.update();
 		java.util.Iterator<SlidePuzzleNode> sNode = node.getChildren();

@@ -8,10 +8,8 @@ import serachItem.SlidePuzzleNode;
 import slidepuzzle_with_Lsystem.SlidePuzzle;
 
 public class SlidePuzzleLsystem extends Lsystem{
-	String goal = "";
-	public SlidePuzzleLsystem(String goal) {
+	public SlidePuzzleLsystem() {
 		// TODO 自動生成されたコンストラクター・スタブ
-		this.goal = goal;
 	}
 
 	@Override
@@ -53,7 +51,7 @@ public class SlidePuzzleLsystem extends Lsystem{
 	public boolean checkFinish(Cell node) {
 		// TODO 自動生成されたメソッド・スタブ
 		SlidePuzzleNode sNode = (SlidePuzzleNode) node;
-		if(sNode.getBoardState().equals(goal))
+		if(sNode.getBoardState().equals(SlidePuzzle.getGoalBoardState()))
 			return true;
 		else 
 			return false;

@@ -49,6 +49,8 @@ public class SlidePuzzleNode extends Cell{
 			else if(direction.equals("4")) setPoint(parent_Point.x - 1,parent_Point.y + 0);
 			else if(direction.equals("6")) setPoint(parent_Point.x + 1,parent_Point.y + 0);
 			else if(direction.equals("2")) setPoint(parent_Point.x + 0,parent_Point.y - 1);
+			else 
+				System.out.println("方向が設定されていない");
 		}
 			
 	}

@@ -26,7 +26,7 @@ public class Main {
 	private boolean roop = true;;
 
 	public Main(SlidePuzzleNode startNode,String goalState){
-		lsys = new SlidePuzzleLsystem(goalState);
+		lsys = new SlidePuzzleLsystem();
 		rootNode = new ArrayList<SlidePuzzleNode>();
 		rootNode.add(startNode);
 
@@ -55,20 +55,6 @@ public class Main {
 			System.out.println("探索終了");
 			System.out.println("step = "+step_num);
 			System.out.println("map size = " + SlidePuzzle.MAP.size());
-			//			ArrayDeque<SlidePuzzleNode> nodes = new ArrayDeque<SlidePuzzleNode>();
-			//			nodes.add(rootNode);
-			//			while(!nodes.isEmpty()){
-			//				SlidePuzzleNode node = nodes.poll();
-			//				String state = node.getBoardState();
-			//				state = state.substring(0,3)+"\n"+state.substring(3,6)+"\n"+state.substring(6,9);
-			//				System.out.println(state);
-			//				System.out.println("-------------");
-			//
-			//				for(SlidePuzzleNode child : node.getChildrenByArrayList()){
-			//					nodes.add(child);
-			//				}
-			//
-			//			}
 
 		}
 	}
@@ -134,13 +120,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ		
-		SlidePuzzle sp = new SlidePuzzle(3, 3);
-		SlidePuzzleNode node = new SlidePuzzleNode("0", "132406875", "2", null);
+		SlidePuzzle sp = new SlidePuzzle(3, 3, "123456780");
+		SlidePuzzleNode node = new SlidePuzzleNode("0", "132406857", "2", null);
 		Main main = new Main(node,"123456780");
 		
-		SlidePuzzleNode node2 = new SlidePuzzleNode("0", "123456780", "2", null);
 		
-		SlidePuzzle.calcDistance(node, node2);
+		Lsystem lsystem = new SlidePuzzleLsystem();
+		lsystem.apply(node);
+		node.update();
+		System.out.println("node1 ="+node.getPoint());
+		for(SlidePuzzleNode sNode : node.getChildrenByArrayList()){
+			System.out.print(sNode.getPoint()+"  ");
+		}
+		System.out.println();
 
 //		SlidePuzzle sp = new SlidePuzzle(4, 4);
 //		SlidePuzzleNode node = new SlidePuzzleNode("0", "312456089c7bd1ef", "2", null);
