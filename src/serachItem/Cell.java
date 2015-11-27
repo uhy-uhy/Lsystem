@@ -2,8 +2,6 @@ package serachItem;
 
 import java.util.ArrayList;
 
-import org.apache.batik.bridge.UpdateManager;
-
 public abstract class Cell {
 	//状態
 	protected String state;

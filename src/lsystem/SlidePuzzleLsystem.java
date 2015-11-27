@@ -1,15 +1,15 @@
 package lsystem;
 
 
-import org.apache.bcel.generic.RETURN;
-
 import serachItem.Cell;
 import serachItem.SlidePuzzleNode;
 import slidepuzzle_with_Lsystem.SlidePuzzle;
 
 public class SlidePuzzleLsystem extends Lsystem{
-	public SlidePuzzleLsystem() {
+	private int max_node_count;
+	public SlidePuzzleLsystem(int max_node_count) {
 		// TODO 自動生成されたコンストラクター・スタブ
+		this.max_node_count = max_node_count;
 	}
 
 	@Override

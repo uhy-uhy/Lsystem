@@ -1,8 +1,8 @@
 package slidepuzzle_with_Lsystem;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
-
-import com.itextpdf.text.pdf.hyphenation.TernaryTree.Iterator;
 
 import lsystem.Lsystem;
 import lsystem.SlidePuzzleLsystem;
@@ -14,10 +14,13 @@ public class SlidePuzzle {
 	static int horizon;
 	static String goal;
 	public static HashMap<String, Boolean> MAP;
+	public static ArrayList<SlidePuzzleNode> drawBuffer;
+	public static boolean drawFlag = false;
 	public SlidePuzzle(int vertical,int horizon){
 		SlidePuzzle.vertical = vertical;
 		SlidePuzzle.horizon = horizon;
 		MAP = new HashMap<String, Boolean>();
+		drawBuffer = new ArrayList<SlidePuzzleNode>();
 	}
 	public SlidePuzzle(int vertical,int horizon,String goal){
 		SlidePuzzle.vertical = vertical;
@@ -165,7 +168,7 @@ public class SlidePuzzle {
 	public static void main(String args[]){
 		SlidePuzzle sp = new SlidePuzzle(3, 3,"123456780");
 		SlidePuzzleNode node = new SlidePuzzleNode("0", "123406785", "8", null);
-		Lsystem lsys = new SlidePuzzleLsystem();
+		Lsystem lsys = new SlidePuzzleLsystem(20000);
 		lsys.apply(node);
 		node.update();
 		java.util.Iterator<SlidePuzzleNode> sNode = node.getChildren();

@@ -2,16 +2,10 @@ package slidepuzzle_with_Lsystem;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import org.gephi.preview.plugin.builders.NodeLabelBuilder;
-
-import com.itextpdf.text.pdf.hyphenation.TernaryTree.Iterator;
-
-import core.Map;
+import processing.core.PApplet;
 import lsystem.Lsystem;
 import lsystem.SlidePuzzleLsystem;
-import serachItem.Cell;
 import serachItem.SlidePuzzleNode;
 
 
@@ -25,8 +19,8 @@ public class Main {
 	private SlidePuzzleNode goalNode = null;
 	private boolean roop = true;;
 
-	public Main(SlidePuzzleNode startNode,String goalState){
-		lsys = new SlidePuzzleLsystem();
+	public Main(SlidePuzzleNode startNode,String goalState,int max_node_count){
+		lsys = new SlidePuzzleLsystem(max_node_count);
 		rootNode = new ArrayList<SlidePuzzleNode>();
 		rootNode.add(startNode);
 
@@ -47,6 +41,7 @@ public class Main {
 			step();
 			postStep();
 			deleteStep();
+			drawStep();
 		}
 		if(goalNode != null){
 			finalization();
@@ -95,6 +90,9 @@ public class Main {
 			node.delete();
 		}
 	}
+	public void drawStep(){
+		SlidePuzzle.drawFlag = true;
+	}
 	public void stop(){
 		roop = false;
 	}
@@ -122,10 +120,12 @@ public class Main {
 		// TODO 自動生成されたメソッド・スタブ		
 		SlidePuzzle sp = new SlidePuzzle(3, 3, "123456780");
 		SlidePuzzleNode node = new SlidePuzzleNode("0", "132406857", "2", null);
-		Main main = new Main(node,"123456780");
+		Main main = new Main(node,"123456780",10000);
 		
+		SlidePuzzle.drawFlag = true;
+		PApplet.main(new String[] { "--location=100,100","draw.MySketch"});
 		
-		Lsystem lsystem = new SlidePuzzleLsystem();
+		Lsystem lsystem = new SlidePuzzleLsystem(10000);
 		lsystem.apply(node);
 		node.update();
 		System.out.println("node1 ="+node.getPoint());
