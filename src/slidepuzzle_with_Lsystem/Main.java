@@ -1,25 +1,38 @@
 package slidepuzzle_with_Lsystem;
 
+import java.applet.Applet;
+import java.awt.BorderLayout;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Scanner;
 
+import javax.swing.JFrame;
+
+import draw.MySketch;
+import draw.MySketch2D;
+import draw.MySketch3D;
 import processing.core.PApplet;
 import lsystem.Lsystem;
 import lsystem.SlidePuzzleLsystem;
 import serachItem.SlidePuzzleNode;
 
 
-public class Main {
+public class Main implements KeyListener{
 
 	private ArrayList<SlidePuzzleNode> rootNode;
 	private Lsystem lsys;
 	private ArrayDeque<SlidePuzzleNode> nodes;
 	private ArrayDeque<SlidePuzzleNode> postNodes;
 	private ArrayDeque<SlidePuzzleNode> deleteNodes;
+	private ArrayDeque<SlidePuzzleNode> drawQueue;
 	private SlidePuzzleNode goalNode = null;
-	private boolean roop = true;;
+	private boolean roop = true;
+	private boolean stop = false;
+	private boolean push = false;
 
-	public Main(SlidePuzzleNode startNode,String goalState,int max_node_count){
+	public Main(SlidePuzzleNode startNode,int max_node_count){
 		lsys = new SlidePuzzleLsystem(max_node_count);
 		rootNode = new ArrayList<SlidePuzzleNode>();
 		rootNode.add(startNode);
@@ -28,21 +41,41 @@ public class Main {
 		postNodes = new ArrayDeque<SlidePuzzleNode>();
 		deleteNodes = new ArrayDeque<SlidePuzzleNode>();
 
+		drawQueue = new ArrayDeque<SlidePuzzleNode>();
+
 		SlidePuzzle.MAP.put(startNode.getBoardState(), true);
+
+		JFrame frame = new JFrame("Controller");
+		frame.setLayout(new BorderLayout());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+		frame.addKeyListener(this);
 	}
 
 	public void run(){
 		int step_num = 0;
 		while(roop){
-			for(SlidePuzzleNode node : rootNode)
-				nodes.add(node);
-			step_num++;
-			preStep();
-			step();
-			postStep();
-			deleteStep();
-			drawStep();
+			stop = false;
+			if(stop == false){
+				System.out.println(step_num+"ステップ開始");
+				for(SlidePuzzleNode node : rootNode)
+					nodes.add(node);
+				step_num++;
+				preStep();
+				step();
+				postStep();
+				deleteStep();
+				drawStep2D();
+				System.out.println(step_num+"ステップ完了");
+				stop = true;
+			}
+			else{
+				continue;
+			}
+			Scanner scan = new Scanner(System.in);
 		}
+		System.out.println("ループ抜け");
+
 		if(goalNode != null){
 			finalization();
 		}
@@ -63,6 +96,7 @@ public class Main {
 			SlidePuzzleNode node = nodes.poll();
 			lsys.apply(node);
 			postNodes.add(node);
+			drawQueue.add(node);
 			for(SlidePuzzleNode child : node.getChildrenByArrayList()){
 				nodes.add(child);
 			}
@@ -90,8 +124,11 @@ public class Main {
 			node.delete();
 		}
 	}
-	public void drawStep(){
-		SlidePuzzle.drawFlag = true;
+	public void drawStep2D(){
+		MySketch2D.setBuffer(drawQueue);
+	}
+	public void drawStep3D(){
+		MySketch3D.setBuffer(drawQueue);
 	}
 	public void stop(){
 		roop = false;
@@ -118,27 +155,42 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ		
-		SlidePuzzle sp = new SlidePuzzle(3, 3, "123456780");
 		SlidePuzzleNode node = new SlidePuzzleNode("0", "132406857", "2", null);
-		Main main = new Main(node,"123456780",10000);
-		
-		SlidePuzzle.drawFlag = true;
-		PApplet.main(new String[] { "--location=100,100","draw.MySketch"});
-		
-		Lsystem lsystem = new SlidePuzzleLsystem(10000);
-		lsystem.apply(node);
-		node.update();
-		System.out.println("node1 ="+node.getPoint());
-		for(SlidePuzzleNode sNode : node.getChildrenByArrayList()){
-			System.out.print(sNode.getPoint()+"  ");
-		}
-		System.out.println();
+		SlidePuzzle sp = new SlidePuzzle(3, 3,node.getBoardState(), "123456780");
+		Main main = new Main(node,10000);
 
-//		SlidePuzzle sp = new SlidePuzzle(4, 4);
-//		SlidePuzzleNode node = new SlidePuzzleNode("0", "312456089c7bd1ef", "2", null);
-//		Main main = new Main(node,"1234567891bcdef0");
-//		main.run();
+		PApplet.main(new String[] { "--location=100,100","draw.MySketch3D"});
 
+
+		//SlidePuzzle sp = new SlidePuzzle(4, 4);
+		//SlidePuzzleNode node = new SlidePuzzleNode("0", "312456089c7bd1ef", "2", null);
+		//Main main = new Main(node,"1234567891bcdef0");
+		main.run();
+
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+		int keycode = e.getKeyCode();
+		if (keycode == KeyEvent.VK_SHIFT ){
+			if(push == false){
+				push = true;
+				System.out.println("push");
+			}
 		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		// TODO 自動生成されたメソッド・スタブ
+
+	}
 
 }

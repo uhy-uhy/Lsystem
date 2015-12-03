@@ -13,22 +13,24 @@ public class SlidePuzzle {
 	static int vertical;
 	static int horizon;
 	static String goal;
+	static String start;
 	public static HashMap<String, Boolean> MAP;
-	public static ArrayList<SlidePuzzleNode> drawBuffer;
-	public static boolean drawFlag = false;
+	public static ArrayDeque<SlidePuzzleNode> drawBuffer = new ArrayDeque<SlidePuzzleNode>();
+	public static ArrayList<SlidePuzzleNode> drawList = new ArrayList<SlidePuzzleNode>();
+	public static boolean buffer_lock = false;
 	public SlidePuzzle(int vertical,int horizon){
 		SlidePuzzle.vertical = vertical;
 		SlidePuzzle.horizon = horizon;
 		MAP = new HashMap<String, Boolean>();
-		drawBuffer = new ArrayList<SlidePuzzleNode>();
 	}
-	public SlidePuzzle(int vertical,int horizon,String goal){
+	public SlidePuzzle(int vertical,int horizon,String start,String goal){
 		SlidePuzzle.vertical = vertical;
 		SlidePuzzle.horizon = horizon;
 		SlidePuzzle.goal = goal;
+		SlidePuzzle.start = start;
 		MAP = new HashMap<String, Boolean>();
 	}
-	
+
 	/**
 	 * 空白マスと指定したマスの交換
 	 * @param node
@@ -136,8 +138,13 @@ public class SlidePuzzle {
 
 		return new String(sb);
 	}
-	
-	//マハラノビス距離の計算
+
+	/***
+	 * 2つの盤面のマンハッタン距離の計算
+	 * @param now
+	 * @param goal
+	 * @return
+	 */
 	public static int[] calcDistance(SlidePuzzleNode now ,SlidePuzzleNode goal){
 		String nowString = now.getBoardState();
 		String goalString = goal.getBoardState();
@@ -151,23 +158,51 @@ public class SlidePuzzle {
 			int x = now_index % horizon;
 			int goal_y = goal_index / horizon;
 			int goal_x = goal_index % horizon;
-			
+
 			distance_x += Math.abs(goal_x - x);
 			distance_y += Math.abs(goal_y - y);
-			
+
 			System.out.println("|"+x +" - "+goal_x+"|  ,  |"+y +" - "+goal_y+"|");
 			System.out.println(distance_x +" , "+distance_y);
 		}
 		return new int[]{distance_x,distance_y};
 	}
-	
+	/**
+	 * ２つの盤面のマンハッタン距離を計算
+	 * @param nowString
+	 * @param goalString
+	 * @return int[]{distance_x,distance_y}
+	 */
+	public static int[] calcDistance(String nowString ,String goalString){
+		int distance_x = 0;
+		int distance_y = 0;
+		for(int i = 0;i < vertical*horizon-1;i++){
+			int now_index = nowString.indexOf(Integer.toString(i));
+			int goal_index = goalString.indexOf(Integer.toString(i));
+
+			int y = now_index / horizon;
+			int x = now_index % horizon;
+			int goal_y = goal_index / horizon;
+			int goal_x = goal_index % horizon;
+
+			distance_x += Math.abs(goal_x - x);
+			distance_y += Math.abs(goal_y - y);
+
+			//System.out.println("|"+x +" - "+goal_x+"|  ,  |"+y +" - "+goal_y+"|");
+			//System.out.println(distance_x +" , "+distance_y);
+		}
+		return new int[]{distance_x,distance_y};
+	}
+
 	public static String getGoalBoardState(){
 		return goal;
 	}
-	
+	public static String getStartBoardState(){
+		return start;
+	}
 	public static void main(String args[]){
-		SlidePuzzle sp = new SlidePuzzle(3, 3,"123456780");
 		SlidePuzzleNode node = new SlidePuzzleNode("0", "123406785", "8", null);
+		SlidePuzzle sp = new SlidePuzzle(3, 3,node.getBoardState(),"123456780");
 		Lsystem lsys = new SlidePuzzleLsystem(20000);
 		lsys.apply(node);
 		node.update();

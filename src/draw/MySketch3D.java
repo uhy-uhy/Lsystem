@@ -2,13 +2,14 @@ package draw;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import processing.core.*;
 import processing.event.MouseEvent;
 import serachItem.SlidePuzzleNode;
 import slidepuzzle_with_Lsystem.SlidePuzzle;
 
-public class MySketch extends PApplet {
+public class MySketch3D extends PApplet {
 
 	float camera_x = 0;
 	float camera_y = -100;
@@ -22,10 +23,10 @@ public class MySketch extends PApplet {
 
 	float pre_mouse_x; 
 	float pre_mouse_y; 
-	
+
 	ArrayList<SlidePuzzleNode> drawArray = new ArrayList<SlidePuzzleNode>();
-	ArrayDeque<SlidePuzzleNode> drawBuffer = new ArrayDeque<SlidePuzzleNode>();
-	boolean update_flag = false;
+	private static ArrayDeque<SlidePuzzleNode> drawBuffer = new ArrayDeque<SlidePuzzleNode>();
+	private static boolean update_flag = false;
 
 	public void settings() {
 		size(600, 600, P3D);
@@ -54,14 +55,12 @@ public class MySketch extends PApplet {
 		pre_mouse_x = mouseX;
 		pre_mouse_y = mouseY;
 
-		chechDrawFlag();
-		if(update_flag)
-			updateDrawArray();
-		
+
 		// カメラを設定  
 		camera(camera_x, camera_y, camera_z, center_x, center_y, center_z, up_x, up_y, up_z);  
 		background(0);  
 
+		update();
 
 		//グリッドの描画   
 		stroke(255);  
@@ -79,7 +78,7 @@ public class MySketch extends PApplet {
 		}  
 
 		//四隅
-		strokeWeight(30);
+		strokeWeight(20);
 		point(-width, 0, width);
 		point(width, 0, -width);
 		point(-width, 0, -width);
@@ -90,24 +89,37 @@ public class MySketch extends PApplet {
 		point(0, 0, 0);
 
 		stroke(0, 255, 0);
-		point(0, -10, 0);
-		point(0, -10, 10);
-		point(30, -20, 0);
-	}
+//		point(0, -10, 0);
+//		point(0, -10, 10);
+//		point(30, -20, 0);
 
-
-	public void updateDrawArray(){
-		drawArray.clear();
-		while(!drawBuffer.isEmpty()){
-			drawArray.add(drawBuffer.poll());
+		for(SlidePuzzleNode node : drawArray){
+			int[] dist = SlidePuzzle.calcDistance(node.getBoardState(), SlidePuzzle.getStartBoardState());
+			//point(dist[0]*10, node.getStep()*(-10), dist[1]*10);
+			point(dist[0]*10, (dist[0]+dist[1])*-10, dist[1]*10);
 		}
-		update_flag = false;
+
 	}
-	public void chechDrawFlag(){
-		if(SlidePuzzle.drawFlag)
-			update_flag = true;
+
+	public static void setBuffer(ArrayDeque<SlidePuzzleNode> nodes){
+		while(!nodes.isEmpty()){
+			SlidePuzzleNode node = nodes.poll();
+			//System.out.println(node.getPoint());
+			drawBuffer.add(node);
+		}
+		update_flag = true;
 	}
-	
+
+	private void update(){
+		if(update_flag){
+			drawArray.clear();
+			while(!drawBuffer.isEmpty()){
+				drawArray.add(drawBuffer.poll());
+			}
+			update_flag = false;
+		}
+	}
+
 	public void mouseWheel(MouseEvent event) {
 		float e = event.getCount();
 		camera_z += e*20;

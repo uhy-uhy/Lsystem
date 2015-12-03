@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import core.Map;
 import slidepuzzle_with_Lsystem.SlidePuzzle;
 
 public class SlidePuzzleNode extends Cell{
@@ -23,6 +24,9 @@ public class SlidePuzzleNode extends Cell{
 	
 	private String direction = "";
 
+	private int variation_x = 0;
+	private int variation_y = 0;
+	private int step = 0;
 	//	public SlidePuzzleNode(String state,String boardState){
 	//		this.state = state;
 	//		parent = null;
@@ -31,6 +35,14 @@ public class SlidePuzzleNode extends Cell{
 	//		next_children = new ArrayList<SlidePuzzleNode>();
 	//		this.boardState = boardState;
 	//	}
+	
+	/**
+	 * @param state
+	 * @param board
+	 * @param direction
+	 * @param parent parentがnullの場合はルートノード
+	 * 
+	 */
 	public SlidePuzzleNode(String state,String board,String direction,SlidePuzzleNode parent){
 		super();
 		this.state = state;
@@ -42,15 +54,16 @@ public class SlidePuzzleNode extends Cell{
 		this.direction = direction;
 		this.parent = parent;
 		this.point = new Point(0,0);
-
+		
 		if(parent != null){
 			Point parent_Point = parent.getPoint();
 			if(direction.equals("8")) setPoint(parent_Point.x + 0,parent_Point.y + 1);
-			else if(direction.equals("4")) setPoint(parent_Point.x - 1,parent_Point.y + 0);
+			else if(direction.equals("4")) setPoint(parent_Point.x + 1,parent_Point.y + 0);
 			else if(direction.equals("6")) setPoint(parent_Point.x + 1,parent_Point.y + 0);
-			else if(direction.equals("2")) setPoint(parent_Point.x + 0,parent_Point.y - 1);
+			else if(direction.equals("2")) setPoint(parent_Point.x + 0,parent_Point.y + 1);
 			else 
 				System.out.println("方向が設定されていない");
+			this.step = parent.step+1;
 		}
 			
 	}
@@ -95,11 +108,20 @@ public class SlidePuzzleNode extends Cell{
 	public Point getPoint(){
 		return point;
 	}
+	public int getVariationX(){
+		return variation_x;
+	}
+	public int getVariationY(){
+		return variation_y;
+	}
 	public void dead(){
 		dead = true;
 	}
 	public boolean getDeadFlag(){
 		return dead;
+	}
+	public int getStep(){
+		return step;
 	}
 	public void delete(){
 		if(dead){
@@ -109,6 +131,8 @@ public class SlidePuzzleNode extends Cell{
 			for(SlidePuzzleNode child : children){
 				child.parent = null;
 			}
+			//TODO 怪しい
+			SlidePuzzle.MAP.remove(this.boardState);
 			parent = null;
 			children.clear();
 			next_children.clear();
