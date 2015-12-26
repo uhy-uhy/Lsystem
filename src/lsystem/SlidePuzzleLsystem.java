@@ -161,6 +161,6 @@ public class SlidePuzzleLsystem extends Lsystem{
 	}
 
 
-
+	
 
 }

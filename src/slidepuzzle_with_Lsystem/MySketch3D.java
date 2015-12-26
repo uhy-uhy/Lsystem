@@ -1,4 +1,4 @@
-package draw;
+package slidepuzzle_with_Lsystem;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

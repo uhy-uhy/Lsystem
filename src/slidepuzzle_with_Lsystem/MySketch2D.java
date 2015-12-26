@@ -1,4 +1,4 @@
-package draw;
+package slidepuzzle_with_Lsystem;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class MySketch2D extends PApplet {
 
 		for(SlidePuzzleNode node : drawArray){
 			int[] dist = SlidePuzzle.calcDistance(node.getBoardState(), SlidePuzzle.getStartBoardState());
-			point(dist[0]*10, dist[1]*10);
+			point(dist[0]*10,dist[1]*10);
 		}
 	}
 

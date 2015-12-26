@@ -1,6 +1,7 @@
 package slidepuzzle_with_Lsystem;
 
 import java.applet.Applet;
+
 import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -9,10 +10,6 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
-
-import draw.MySketch;
-import draw.MySketch2D;
-import draw.MySketch3D;
 import processing.core.PApplet;
 import lsystem.Lsystem;
 import lsystem.SlidePuzzleLsystem;
@@ -159,7 +156,7 @@ public class Main implements KeyListener{
 		SlidePuzzle sp = new SlidePuzzle(3, 3,node.getBoardState(), "123456780");
 		Main main = new Main(node,10000);
 
-		PApplet.main(new String[] { "--location=100,100","draw.MySketch3D"});
+		PApplet.main(new String[] { "--location=100,100","maze_with_Lsystem.MySketch3D"});
 
 
 		//SlidePuzzle sp = new SlidePuzzle(4, 4);
