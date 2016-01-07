@@ -37,7 +37,7 @@ public class Simulator2D extends PApplet {
 		point(width, 0);
 		point(0, 0);
 		point(width, width);
-		
+
 		//フェロモン（仮）
 		stroke(255, 0, 0);
 		strokeWeight(1);
@@ -48,18 +48,26 @@ public class Simulator2D extends PApplet {
 				}
 			}
 		}
-		
+
 		//原点
 		strokeWeight(1);
 		stroke(255, 0, 0);
 		point(0,0);
 
+		if(Maze.getWallSetting()){
+			stroke(0, 0, 255);
+			for(int y = 0;y < Maze.height;y++)
+			{
+				for(int x = 0;x < Maze.width;x++){
+					if(Maze.getWallPoint(x, y))	point(x , y );
+				}
+			}
+		}
 		stroke(0, 255, 0);
-
 		for(MazeNode node : drawArray){
 			point(node.getPoint().x , node.getPoint().y );
 		}
-		
+
 
 	}
 

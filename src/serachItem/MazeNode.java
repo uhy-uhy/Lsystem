@@ -113,8 +113,10 @@ public class MazeNode extends Cell{
 		for(MazeNode node : next_children){
 			Point cPoint = node.point;
 			if(Maze.getNode(cPoint.x, cPoint.y) == null){
-				children.add(node);
-				Maze.setNode(cPoint.x, cPoint.y, node);
+				if(Maze.getWallPoint(cPoint.x, cPoint.y) == false){
+					children.add(node);
+					Maze.setNode(cPoint.x, cPoint.y, node);
+				}
 			}
 
 		}

@@ -31,6 +31,18 @@ public class MazeLsystem extends Lsystem{
 	public static int debug_dead_count = 0;
 	public static int debug_rule_2 = 0;
 	public static int debug_rule_3 = 0;
+	public static int debug_apply_0 = 0;
+	public static int debug_apply_1 = 0;
+	public static int debug_apply_2 = 0;
+	public static int debug_apply_3 = 0;
+	public static int debug_apply_d = 0;
+	public static int debug_apply_D = 0;
+	public static int debug_generate_0 = 0;
+	public static int debug_generate_1 = 0;
+	public static int debug_generate_2 = 0;
+	public static int debug_generate_3 = 0;
+	public static int debug_generate_d = 0;
+	public static int debug_generate_D = 0;
 	
 	public MazeLsystem(int max_node_count,int sight){
 		this.sight = sight;
@@ -125,6 +137,18 @@ public class MazeLsystem extends Lsystem{
 		debug_dead_count = 0;
 		debug_rule_2 = 0;
 		debug_rule_3 = 0;
+		debug_apply_0 = 0;
+		debug_apply_1 = 0;
+		debug_apply_2 = 0;
+		debug_apply_3 = 0;
+		debug_apply_d = 0;
+		debug_apply_D = 0;
+		debug_generate_0 = 0;
+		debug_generate_1 = 0;
+		debug_generate_2 = 0;
+		debug_generate_3 = 0;
+		debug_generate_d = 0;
+		debug_generate_D = 0;
 	}
 	
 	/**
@@ -134,7 +158,9 @@ public class MazeLsystem extends Lsystem{
 	 */
 	private void rule_0(MazeNode node){
 		double random = Math.random();
+		debug_apply_0++;
 		if(random > pd){
+			debug_generate_0++;
 			node.setState("3");
 			String direction = changeDirection(node, "TOP");
 			Point next_point = changePosition(node, direction);
@@ -154,10 +180,12 @@ public class MazeLsystem extends Lsystem{
 	 */
 	private void rule_1(MazeNode node){
 		double random = Math.random();
+		debug_apply_1++;
 		if(random > (pa/P)){
 			node.setState("2");
 		}
 		else{
+			debug_generate_1++;
 			node.setState("3");
 			String direction = changeDirection(node, "TOP");
 			Point next_point = changePosition(node, direction);
@@ -174,6 +202,8 @@ public class MazeLsystem extends Lsystem{
 	 */
 	private void rule_2(MazeNode node) {
 		double random = Math.random();
+		debug_apply_2++;
+		debug_generate_2++;
 		//子を３つ生成
 		if(random > (pb/(pb+pc))){
 			debug_rule_3++;
@@ -222,6 +252,7 @@ public class MazeLsystem extends Lsystem{
 	private void rule_3(MazeNode node){
 		//double ph = pd;
 		//double ph = sigmoid(Maze.getArroundSearchResultRate(node.getPoint().x, node.getPoint().x, 2), 4);
+		debug_apply_3++;
 		double ph = Maze.getArroundSearchResultRate(node.getPoint().x, node.getPoint().y, sight);
 		double random = Math.random();
 		if(random > ph){
@@ -253,6 +284,8 @@ public class MazeLsystem extends Lsystem{
 					parent.setState("d");
 					node.dead();
 					debug_dead_count++;
+					debug_apply_D++;
+					debug_generate_D++;
 				}	
 			}
 		}
@@ -267,6 +300,7 @@ public class MazeLsystem extends Lsystem{
 	private void rule_d(MazeNode node){	
 		//double ph = pd;
 		//double ph = sigmoid(Maze.getArroundSearchResultRate(node.getPoint().x, node.getPoint().x, 2), 4);
+		debug_apply_d++;
 		double ph = Maze.getArroundSearchResultRate(node.getPoint().x, node.getPoint().y, sight);
 		double random = Math.random();
 		if(random > ph){

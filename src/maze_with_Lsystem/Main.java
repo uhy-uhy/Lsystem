@@ -49,15 +49,16 @@ public class Main {
 
 		try {
 			// 出力ストリームの生成
-			FileWriter outFile = new FileWriter("log.csv");
+			FileWriter outFile = new FileWriter("log_MaxNodes="+max_node_count+"_sight="+sight+"_"+Maze.width+"x"+Maze.height+
+					"_"+System.currentTimeMillis()+".csv");
 			BufferedWriter outBuffer = new BufferedWriter(outFile);
 			String data = "";
 			
 			outBuffer.write("step"+","+"node"+","+"sig"+","+"state_0"
 					+","+"state_1"+","+"state_2"+","+"state_3"+","+"state_d"
-					+","+"tate_D"+"\n");
+					+","+"tate_D"+","+"DEAD"+","+"true_count"+"\n");
 			data = max_node_count+","+sight+"\n";
-			outBuffer.write(data);
+			//outBuffer.write(data);
 			while(roop){
 
 				System.out.println(step_num+"ステップ開始");
@@ -87,14 +88,18 @@ public class Main {
 					//						+"rule_2 = "+MazeLsystem.debug_rule_2+"\n"
 					//						+"rule_3 = "+MazeLsystem.debug_rule_3+"\n");
 					//				MazeLsystem.reset_debug_num();
-//					data = step_num+","+Maze.getNodeCount()+","+sig+","+MazeLsystem.debug_state_0
-//							+","+MazeLsystem.debug_state_1+","+MazeLsystem.debug_state_2+","+MazeLsystem.debug_state_3+","+MazeLsystem.debug_state_d
-//							+","+MazeLsystem.debug_state_D+"\n";
-					data = step_num+","+Maze.getNodeCount()+","+sig+","+MazeLsystem.debug_state_0+","+
-							+Maze.getSearchMAPTrue()+","+Maze.width*Maze.height+"\n";
+					data = step_num+","+Maze.getNodeCount()+","+sig+","+MazeLsystem.debug_apply_0
+							+","+MazeLsystem.debug_apply_1+","+MazeLsystem.debug_apply_2+","+MazeLsystem.debug_apply_3
+							+","+MazeLsystem.debug_apply_d+","+MazeLsystem.debug_apply_D+","
+							+MazeLsystem.debug_dead_count+","
+							+(double)Maze.getSearchMAPTrue()+","+(double)Maze.getNodeCount()/(double)max_node_count+","
+							+(double)Maze.getSearchMAPTrue()/(double)Maze.getTotalCell()+"\n";
+//					data = step_num+","+Maze.getNodeCount()+","+sig+","+MazeLsystem.debug_state_0+","+
+//							+Maze.getSearchMAPTrue()+","+Maze.width*Maze.height+"\n";
 					outBuffer.write(data);
 					MazeLsystem.reset_debug_num();
-					Thread.sleep(50);
+					Thread.sleep(30);
+				
 				}
 				catch(InterruptedException e){}
 			}
@@ -170,9 +175,10 @@ public class Main {
 
 	public static void main(String[] args) {
 		// TODO 自動生成されたメソッド・スタブ		
-		MazeNode node = new MazeNode("0", "2", null, new Point(200,200));
+		MazeNode node = new MazeNode("0", "2", null, new Point(20,20));
 		Maze sp = new Maze(400, 400, new Point(390,390));
-		Main main = new Main(node,5000,20);
+		//Maze sp = new Maze("./resources/Maze2_1.png");
+		Main main = new Main(node,5000,10);
 
 		PApplet.main(new String[] { "--location=100,100","maze_with_Lsystem.Simulator2D"});
 		main.run();
